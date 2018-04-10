@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
@@ -71,8 +70,7 @@ func connectDiscordBot() (*discordgo.Session, error) {
 		return nil, errors.Wrap(err, "Failed to create Discord sessions")
 	}
 
-	// Register the messageCreate func as a callback for MessageCreate events.
-	dg.AddHandler(messageCreate)
+	// Register handlers
 	dg.AddHandler(presenceUpdate)
 
 	// Open connection to Discord
@@ -81,30 +79,6 @@ func connectDiscordBot() (*discordgo.Session, error) {
 		return nil, errors.Wrap(err, "Failed to open Discord connection")
 	}
 	return dg, nil
-}
-
-// This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the autenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// Ignore unauthorized users
-	// TODO: Check DB for authorized users
-	if m.Author.ID != "137177294518091776" || !strings.HasPrefix(m.Content, "!") {
-		return
-	}
-
-	// Split message into parts
-	parts := strings.Split(m.Content, " ")
-	if len(parts) < 1 {
-		return
-	}
-
-	// Run code based on first part
-	switch parts[0] {
-	case "!addserver":
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Adding server %v\n", parts[1]))
-	default:
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Invalid command [%v]\n", m.Content))
-	}
 }
 
 func presenceUpdate(s *discordgo.Session, m *discordgo.PresenceUpdate) {
