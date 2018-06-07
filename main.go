@@ -20,6 +20,8 @@ var (
 	LastInfo steam.InfoResponse
 )
 
+var initializedPresence bool
+
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.StringVar(&Address, "s", "", "Server ip")
@@ -88,9 +90,11 @@ func presenceUpdate(s *discordgo.Session, m *discordgo.PresenceUpdate) {
 		return
 	}
 
-	if LastInfo.Players == info.Players {
+	if LastInfo.Players == info.Players && initializedPresence {
 		return
 	}
+	
+	initializedPresence = true
 
 	LastInfo = *info
 	err = s.UpdateStatus(0, fmt.Sprintf("%d/%d Players online", info.Players, info.MaxPlayers))
