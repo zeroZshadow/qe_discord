@@ -20,6 +20,8 @@ var (
 	LastInfo steam.InfoResponse
 )
 
+var first bool
+
 func init() {
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.StringVar(&Address, "s", "", "Server ip")
@@ -33,6 +35,7 @@ func init() {
 
 func main() {
 	var err error
+	first = true
 	Server, err = connectSteamQuery(Address)
 	if err != nil {
 		fmt.Println(err)
@@ -83,9 +86,19 @@ func connectDiscordBot() (*discordgo.Session, error) {
 
 func presenceUpdate(s *discordgo.Session, m *discordgo.PresenceUpdate) {
 	info, err := Server.Info()
+	
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+	
+	if first == true {
+		first = false
+		LastInfo = *info
+		err = s.UpdateStatus(0, fmt.Sprintf("%d/%d Players online", info.Players, info.MaxPlayers))
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 
 	if LastInfo.Players == info.Players {
